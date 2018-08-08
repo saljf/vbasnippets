@@ -96,8 +96,8 @@
         Range("B1").Value = "Index"
         Range("B2").FormulaR1C1 = _
             "=IF(RC[-1] < TEXT(R[-1]C[-1]+TIME(0, 0, 5), ""YYYY-MM-DD HH:MM:SS""), 1, 0)"
-        Range("B2" & ":B" & LastRow).FillDown
-        Range("B2" & ":B" & LastRow).Calculate
+        Range("B2:B" & LastRow).FillDown
+        Range("B2:B" & LastRow).Calculate
         Columns("B:B").Select
         Selection.Copy
         Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
