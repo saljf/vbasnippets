@@ -69,7 +69,7 @@
         Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
             xlNone, SkipBlanks:=False, Transpose:=False
 '
-' Where column A contains 'x' or 'y', replace column B with z
+' Where column A contains 'x' or 'y', replace column B with 'z'
 '
         For i = FirstRow To LastRow
             If InStr(1, Range("A" & i), "x") <> 0 _
