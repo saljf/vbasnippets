@@ -1,0 +1,120 @@
+'
+' Initialise variables and configure working state
+'
+    Dim FirstRow As Integer
+    Dim LastRow As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim CalcMode As Long
+    Dim ViewMode As Long
+
+    With Application
+        CalcMode = .Calculation
+            .Calculation = xlCalculationManual
+            .ScreenUpdating = False
+    End With
+'
+' Define FirstRow and LastRow
+'
+    With ActiveSheet
+        FirstRow = 2
+        LastRow = Range("A1:A" & Range("A1").End(xlDown).Row).Rows.Count
+    End With
+'
+' Sort by column A, then by column B, then by column C
+'
+    ActiveSheet.Sort.SortFields.Clear
+    ActiveSheet.Sort.SortFields.Add Key:=Range( _
+        "A2:A" & LastRow), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    ActiveSheet.Sort.SortFields.Add Key:=Range( _
+        "B2:B" & LastRow), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    ActiveSheet.Sort.SortFields.Add Key:=Range( _
+        "C2:C" & LastRow), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With ActiveSheet.Sort
+        .SetRange Range("A1" & ":AZ" & LastRow)
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+'
+' Continue initialising
+'
+    With ActiveSheet
+        .Select
+        ViewMode = ActiveWindow.View
+        ActiveWindow.View = xlNormalView
+        .DisplayPageBreaks = False
+'
+' Populate column A with new formula or value, conditional on other values:
+'
+        For i = LastRow To FirstRow Step -1
+            If Condition1 _
+                And Condition2 _
+            Then
+                Range("A" & i).FormulaR1C1 = "formula"
+            ElseIf Condition3 _
+            Then
+                Range("A" & i).FormulaR1C1 = "formula"
+            Else
+                Range("A" & i).Value = value
+            End If
+        Next i
+        Columns("B:B").Select
+        Selection.Copy
+        Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+            xlNone, SkipBlanks:=False, Transpose:=False
+'
+' Where column A contains 'x' or 'y', replace column B with z
+'
+        For i = FirstRow To LastRow
+            If InStr(1, Range("A" & i), "x") <> 0 _
+                Or InStr(1, Range("A" & i), "y") <> 0 _
+            Then
+                Range("B" & i).Value = z
+            End If
+        Next i
+'
+' Populate DateTime (AEST) with converted UTC (stored in YYYY-MM-DD HH:MM:SS format), adapting for daylight savings
+'
+        Range("A2").FormulaR1C1 = _
+            "=TEXT(IF(AND(DATE(YEAR(RC[-1]), MONTH(RC[-1]), DAY(RC[-1])) > DATE(YEAR(RC[-1]), 4, CHOOSE(WEEKDAY(RC[-1], 2), 7, 6, 5, 4, 3, 2, 1)) + 2/24, DATE(YEAR(RC[-1]), MONTH(RC[-1]), DAY(RC[-1])) < DATE(YEAR(RC[-1]), 10, CHOOSE(WEEKDAY(RC[-1], 2), 7, 6, 5, 4, 3, 2, 1)) + 2/24), 10, 11)/24 + RC[-1], ""YYYY-MM-DD HH:MM:SS"")"
+        Range("A2" & ":B" & LastRow).FillDown
+        Range("A2" & ":B" & LastRow).Calculate
+        Columns("B:B").Select
+        Selection.Copy
+        Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+            xlNone, SkipBlanks:=False, Transpose:=False
+'
+' Create temporary index column to indicate whether row occurs within 5 seconds of previous row
+'
+        Columns("B:B").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range("B1").Value = "Index"
+        Range("B2").FormulaR1C1 = _
+            "=IF(RC[-1] < TEXT(R[-1]C[-1]+TIME(0, 0, 5), ""YYYY-MM-DD HH:MM:SS""), 1, 0)"
+        Range("B2" & ":B" & LastRow).FillDown
+        Range("B2" & ":B" & LastRow).Calculate
+        Columns("B:B").Select
+        Selection.Copy
+        Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+            xlNone, SkipBlanks:=False, Transpose:=False
+'
+' Delete column
+'
+        Columns("A:A").Delete Shift:=xlToLeft
+'
+' Find and replace 'x' with 'y'
+'
+	Columns("A:A").Replace What:="x", Replacement:="y"
+'
+' Finish
+'
+    End With
+    With Application
+        .ScreenUpdating = True
+        .Calculation = CalcMode
+    End With
